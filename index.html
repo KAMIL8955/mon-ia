@@ -191,10 +191,12 @@
       "https://k-ia-server.elabedkamil47.workers.dev/";
 
     function handleKey(event) {
+
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         sendMessage();
       }
+
     }
 
     async function sendMessage() {
@@ -214,67 +216,40 @@
 
       input.value = "";
 
-      const loading = addMessage("K-IA réfléchit... 🤔", "bot");
+      const loading = addMessage(
+        "K-IA réfléchit... 🤔",
+        "bot"
+      );
 
       try {
 
         const response = await fetch(WORKER_URL, {
+
           method: "POST",
+
           headers: {
             "Content-Type": "application/json"
           },
+
           body: JSON.stringify({
             message: message
           })
+
         });
 
-        const data = await response.json();
+        const text = await response.text();
 
         loading.remove();
 
-        if (data.answer) {
-          addMessage(data.answer, "bot");
-        } else {
-          addMessage(
-            "Désolé, une erreur est survenue. 😕",
-            "bot"
+        let data;
+
+        try {
+          data = JSON.parse(text);
+        } catch {
+          throw new Error(
+            "Réponse du serveur invalide : " + text
           );
         }
 
-      } catch (error) {
-
-        loading.remove();
-
-        addMessage(
-          "Impossible de contacter K-IA pour le moment. 😕",
-          "bot"
-        );
-
-        console.error(error);
-      }
-    }
-
-    function addMessage(text, type) {
-
-      const chat = document.getElementById("chat");
-
-      const message = document.createElement("div");
-      message.className = "message " + type;
-
-      const bubble = document.createElement("div");
-      bubble.className = "bubble";
-      bubble.textContent = text;
-
-      message.appendChild(bubble);
-      chat.appendChild(message);
-
-      chat.scrollTop = chat.scrollHeight;
-
-      return message;
-    }
-
-  </script>
-
-</body>
-</html>
+        if (!response.ok) {
 ```
