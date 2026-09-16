@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -186,6 +187,9 @@
 
   <script>
 
+    const WORKER_URL =
+      "https://k-ia-server.elabedkamil47.workers.dev/";
+
     function handleKey(event) {
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
@@ -193,7 +197,7 @@
       }
     }
 
-    function sendMessage() {
+    async function sendMessage() {
 
       const input = document.getElementById("messageInput");
       const message = input.value.trim();
@@ -210,13 +214,44 @@
 
       input.value = "";
 
-      // Réponse temporaire
-      setTimeout(() => {
+      const loading = addMessage("K-IA réfléchit... 🤔", "bot");
+
+      try {
+
+        const response = await fetch(WORKER_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: message
+          })
+        });
+
+        const data = await response.json();
+
+        loading.remove();
+
+        if (data.answer) {
+          addMessage(data.answer, "bot");
+        } else {
+          addMessage(
+            "Désolé, une erreur est survenue. 😕",
+            "bot"
+          );
+        }
+
+      } catch (error) {
+
+        loading.remove();
+
         addMessage(
-          "Je suis encore en cours de connexion à mon intelligence artificielle 🤖",
+          "Impossible de contacter K-IA pour le moment. 😕",
           "bot"
         );
-      }, 500);
+
+        console.error(error);
+      }
     }
 
     function addMessage(text, type) {
@@ -234,9 +269,12 @@
       chat.appendChild(message);
 
       chat.scrollTop = chat.scrollHeight;
+
+      return message;
     }
 
   </script>
 
 </body>
 </html>
+```
